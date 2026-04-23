@@ -1,0 +1,13 @@
+Non-Functional Requirements:
+
+NFR1: The vague check by the controller agent should return results within 200ms.
+NFR2: The sequential chain of agents from Planner to Enhancer should complete the generation within 10-15 seconds using Groq's API.
+NFR3: The System should support 10 simultaneous users generating mindmaps without compromising with the processing speed.
+NFR4: The D3.js must visualise the SVG tree mindmap within 1 second after receiving the validated JSON.
+NFR5: The system shall implement the retry mechanism if Groq API returns an error.
+NFR6: If the enhancer agent fails, the system should still render a validated tree without emojis or colours rather than failing the entire request.
+NFR7: The user interface should adjust layout for tablet and desktop screen resolutions.
+NFR8: User input should not be stored permanently or used for model training without explicit consent from user.
+NFR9: A User should be able to download mindmap within 2 minutes.
+NFR10: All the data transfers between frontend, backend and Groq API should be encrypted.
+NFR11: The system should be designed in such a way that any agent can be replaced with a different model and with minimum changes to the whole pipeline.
