@@ -1,0 +1,30 @@
+{
+  "total_mutants": 13,
+  "killed": 11,
+  "survived": 2,
+  "score": 84.61538461538461,
+  "files": {
+    "agents/validator_agent.py": {
+      "killed": 11,
+      "survived": 2,
+      "total": 13,
+      "score": 84.61538461538461
+    }
+  },
+  "survived_mutants": [
+    {
+      "file": "agents/validator_agent.py",
+      "line": 65,
+      "type": "comparison",
+      "pattern": ">",
+      "replacement": ">="
+    },
+    {
+      "file": "agents/validator_agent.py",
+      "line": 65,
+      "type": "comparison",
+      "pattern": ">",
+      "replacement": "<"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+<html><body><h1>agents/base_agent.py</h1>Killed 16 out of 91 mutants<h2>Survived</h2>Survived mutation testing. These mutants show holes in your test suite.<h3>Mutant 1</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -6,7 +6,7 @@
+ from dotenv import load_dotenv
+ 
+ # Load environment variables
+-basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
++basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'XX..XX'))
+ load_dotenv(os.path.join(basedir, '.env'))
+ 
+ import asyncio
+</pre><h3>Mutant 3</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -7,7 +7,7 @@
+ 
+ # Load environment variables
+ basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+-load_dotenv(os.path.join(basedir, '.env'))
++load_dotenv(os.path.join(basedir, 'XX.envXX'))
+ 
+ import asyncio
+ 
+</pre><h3>Mutant 12</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -22,7 +22,7 @@
+         """To be implemented by subclasses"""
+         raise NotImplementedError
+ 
+-    async def call_llm(self, prompt: str, max_retries: int = 3) -> str:
++    async def call_llm(self, prompt: str, max_retries: int = 4) -> str:
+         if not self.api_key:
+             raise ValueError(f"API key missing for agent: {self.name}")
+ 
+</pre><h3>Mutant 14</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -24,7 +24,7 @@
+ 
+     async def call_llm(self, prompt: str, max_retries: int = 3) -> str:
+         if not self.api_key:
+-            raise ValueError(f"API key missing for agent: {self.name}")
++            raise ValueError(f"XXAPI key missing for agent: {self.name}XX")
+ 
+         headers = {
+             "Authorization": f"Bearer {self.api_key}",
+</pre><h3>Mutant 17</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -28,7 +28,7 @@
+ 
+         headers = {
+             "Authorization": f"Bearer {self.api_key}",
+-            "Content-Type": "application/json"
++            "XXContent-TypeXX": "application/json"
+         }
+         
+         payload = {
+</pre><h3>Mutant 18</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -28,7 +28,7 @@
+ 
+         headers = {
+             "Authorization": f"Bearer {self.api_key}",
+-            "Content-Type": "application/json"
++            "Content-Type": "XXapplication/jsonXX"
+         }
+         
+         payload = {
+</pre><h3>Mutant 22</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -34,7 +34,7 @@
+         payload = {
+             "model": self.model,
+             "messages": [
+-                {"role": "system", "content": f"You are the {self.name} assistant. Return only valid JSON."},
++                {"XXroleXX": "system", "content": f"You are the {self.name} assistant. Return only valid JSON."},
+                 {"role": "XXuserXX", "content": prompt}
+             ],
+             "temperature": 0.7
+</pre><h3>Mutant 23</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -34,7 +34,7 @@
+         payload = {
+             "model": self.model,
+             "messages": [
+-                {"role": "system", "content": f"You are the {self.name} assistant. Return only valid JSON."},
++                {"role": "XXsystemXX", "content": f"You are the {self.name} assistant. Return only valid JSON."},
+                 {"role": "XXuserXX", "content": prompt}
+             ],
+             "temperature": 0.7
+</pre><h3>Mutant 25</h3><pre>--- agents/base_agent.py
++++ agents/base_agent.py
+@@ -34,7 +34,7 @@
+         payload = {
+             "model": self.model,
+             "messages": [
+-                {"role": "system", "content": f"You are the {self.name} assistant. Return only valid JSON."},
++                {"role": "system", "content": f"XXYou are the {self.name} assistant. Return only valid JSON.XX"},
+                 {"role": "XXuserXX", "content": prompt}
+             ],
+             "temperature": 0.7
+</pre><h3>Mutant 26</h3><pre></pre></body></html>
