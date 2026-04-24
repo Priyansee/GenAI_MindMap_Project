@@ -1,24 +1,79 @@
-1) Input & Clarification
+User Stories
+
 As a user, I want to enter unstructured ideas so that I can organize my thoughts easily.
+
+Acceptance Criteria:
+
+System accepts text input
+Minimum 10 character required
+Input is sent to backend controller
+System responds within acceptable time
+
+
 As a user, I want to answer clarification questions so that the system better understands my intent.
 
-2) Mind Map Generation
-As a user, I want the system to break my idea into phases so that I get a clear roadmap.
-As a user, I want my idea to be converted into a structured hierarchy so that it is easy to understand.
-As a user, I want the system to validate the generated structure so that I receive correct output.
-As a user, I want enhanced visualization (colors, emojis, summaries) so that my mind map is more readable.
+Acceptance Criteria:
 
-3) Visualization & Interaction
-As a user, I want to view my mind map visually so that I can explore relationships between ideas.
-As a user, I want an interactive diagram so that I can navigate large structures easily.
+Questions are generated only when input is submited
+Questions appear in MCQ format 
+Answers are merged with original input
 
-4) Export & Sharing
-As a user, I want to download my mind map as PNG so that I can share it as an image.
-As a user, I want to export my mind map as PDF.
-As a user, I want to export JSON so that I can reuse the structure programmatically.
 
-5) Performance & Reliability
+
+As a user, I want enhanced visualization (colors, emojis) so that my mind map is more readable.
+
+Acceptance Criteria:
+
+Nodes include colors/emojis
+Mind map renders correctly
+All nodes visible
+No broken layout
+
+As a user, I want to view my mind map visually so that I can explore relationships between ideas and 
+interactive diagram so that I can navigate large structures easily.
+
+Acceptance Criteria:
+
+clear relationships between nodes
+Nodes can expand/collapse
+Zoom and pan supported
+Smooth interaction
+
+
+As a user, I want to download my mind map as PNG, PDF and JSON.
+
+Acceptance Criteria:
+
+High-resolution image generated
+Entire mind map captured
+PDF generated with correct layout
+Content readable in PDF
+JSON downloadable
+Matches schema with JSON format
+Reusable structure of JSON
+Download starts successfully
+
+
 As a user, I want fast responses so that I don’t have to wait long.
+
+Acceptance Criteria:
+
+Clarification < 3s
+Full generation within acceptable time < 10s
+
 As a user, I want the system to handle invalid or empty input so that I don’t face errors.
-As a user, I want to refine my input multiple times so that I can improve the output quality.
-As a user, I want consistent results so that I can rely on the system for repeated use.
+
+Acceptance Criteria:
+
+Errors shown clearly
+System does not crash
+
+As a user, I want to refine my input multiple times so that I can improve the output quality and 
+consistent results so that I can rely on the system for repeated use.
+
+Acceptance Criteria:
+
+User can resubmit improved input
+System regenerates output
+Similar inputs produce similar outputs
+Structure remains stable

@@ -1,0 +1,168 @@
+UC-01: Submit Raw Idea
+Actor: User
+Description: User enters unstructured text input into the system
+Preconditions:
+User is on the input interface
+Postconditions:
+Input is sent to backend for analysis
+
+Main Flow:
+
+User types/pastes idea
+User clicks submit
+System sends input to controller
+
+Alternate Flow:
+
+If input is empty -> system shows error message
+
+UC-02: Detect and Clarify Unsure Input
+Actor: System, User
+Description: System detects unsure input and asks clarification questions
+Preconditions:
+Input received from user
+Postconditions:
+Clarified input is prepared
+
+Main Flow:
+
+Controller checks input length/quality
+If it is unstrucutred -> triggers Clarifier Agent
+System generates questions
+User answers questions
+System combines answers with input
+
+
+
+UC-02: Generate Strategic Plan
+Actor: System
+Description: Planner Agent creates phases and milestones
+Preconditions:
+Clarified input available
+Postconditions:
+List of phases generated
+
+Main Flow:
+
+Input sent to Planner Agent
+Agent generates roadmap (phases, steps)
+Output stored for next stage
+
+
+UC-03: Structure Mind Map
+Actor: System
+Description: Structurer Agent converts plan into hierarchical structure
+Preconditions:
+Planner output available
+Postconditions:
+Nested JSON tree created
+
+Main Flow:
+
+Receive phases(steps) list
+Convert into parent-child hierarchy
+Output structured JSON
+
+
+UC-04: Validate Structure
+Actor: System
+Description: Validator ensures JSON format and logic correctness
+Preconditions:
+Structured JSON available
+Postconditions:
+Validated or corrected JSON
+
+Main Flow:
+
+Parse JSON
+Check required keys
+Validate hierarchy
+
+Alternate Flow:
+
+2a. If invalid -> return error or regenerate
+
+
+
+UC-05: Enhance Mind Map
+Actor: System
+Description: Enhancer improves visual and semantic quality
+Preconditions:
+Validated JSON available
+Postconditions:
+Styled and enriched JSON
+
+Main Flow:
+
+Add colors, emojis, summaries
+Improve readability
+Output enhanced structure
+
+
+UC-06: Visualize Mind Map
+Actor: System
+Description: Render mind map using visualization engine
+Preconditions:
+Enhanced JSON available
+Postconditions:
+Interactive mind map displayed
+
+Main Flow:
+
+Send JSON to renderer
+Generate visual graph
+Display to user
+
+
+UC-07: Export Mind Map
+Actor: User
+Description: User downloads generated mind map
+Preconditions:
+Mind map displayed
+Postconditions:
+File downloaded
+
+Main Flow:
+
+User selects format (PNG/PDF/JSON)
+System processes export
+File downloaded
+
+
+UC-08: End-to-End Mind Map Generation
+Actor: User, System
+Description: Complete flow from input to export
+Preconditions:
+User accesses system
+Postconditions:
+Mind map generated and optionally downloaded
+
+Main Flow:
+
+User submits idea
+System checks vagueness
+Clarification (if needed)
+Planner - Structurer - Validator - Enhancer
+Visualization displayed
+User exports output
+
+
+UC-09: Refine Mind Map (Single Iteration)
+Actor: User, System
+Description: User refines the generated mind map by providing updated input or feedback, and the system regenerates the mind map once.
+Preconditions:
+Initial mind map has been generated and displayed
+Postconditions:
+Updated (refined) mind map is generated and displayed
+
+Main FLow:
+User reviews the generated mind map
+User provides refinement input (e.g., adds more details / corrects idea)
+System receives updated input
+System re-runs pipeline (Planner - Structurer - Validator - Enhancer)
+Updated mind map is generated
+System displays refined mind map
+
+Alternate Flow:
+9a. If user provides empty refinement then system shows error message
+9b. If regeneration fails then system shows previous version with error notification
