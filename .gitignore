@@ -22,6 +22,8 @@ out/
 build/
 dist/
 public/build/
+.vite/
+**/deps_temp*/
 
 # =========================
 # Logs

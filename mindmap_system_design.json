@@ -1,0 +1,639 @@
+{
+  "project": {
+    "name": "MindForge",
+    "description": "Mind Map Generator — converts unstructured text into visual, exportable mind maps using a multi-agent GenAI pipeline.",
+    "version": "1.0.0",
+    "course": "IT-568: GenAI for Software Engineering"
+  },
+  "system_overview": {
+    "description": "Mind Map Generator using a multi-agent pipeline. User inputs raw text, the pipeline plans, structures, validates, enhances, renders, exports, and tests the mind map autonomously.",
+    "architecture": "Sequential pipeline using single Groq API key",
+    "flow": "User Input → Planner → Structurer → Validator → Enhancer → Renderer → Exporter → Tester"
+  },
+  "api_config": {
+    "provider": "groq",
+    "base_url": "https://api.groq.com/openai/v1",
+    "model": "llama-3.3-70b-versatile",
+    "key_env_var": "GROK_API_KEY",
+    "max_tokens": 3000,
+    "temperature": 0.7,
+    "note": "API key must be stored in .env file as GROK_API_KEY — never hardcoded"
+  },
+  "variable_passing": {
+    "style": "mustache",
+    "pipeline_context": "Each agent receives the previous agent's output as its input variable. Variables are injected at runtime by the PipelineController.",
+    "variables": {
+      "{{input}}": "Raw user text from frontend textarea",
+      "{{planner_output}}": "JSON output from Planner Agent",
+      "{{structured_output}}": "JSON output from Structurer Agent",
+      "{{validated_output}}": "JSON output from Validator Agent",
+      "{{enhanced_output}}": "JSON output from Enhancer Agent"
+    }
+  },
+  "agents": [
+    {
+      "name": "Planner Agent",
+      "class": "PlannerAgent",
+      "type": "LLM",
+      "next_agent": "Structurer Agent",
+      "description": "Analyzes raw user input and extracts the central topic, main branches, and relationships. This is the first stage — if it fails the pipeline stops.",
+      "output_format": {
+        "central_topic": "string",
+        "branches": [
+          "string"
+        ],
+        "relationships": [
+          {
+            "from": "string",
+            "to": "string",
+            "label": "string"
+          }
+        ]
+      },
+      "prompt_template": "Analyze the input step-by-step:\n1. Identify the single central topic\n2. Extract 3-7 main branches (key themes or categories)\n3. Identify any relationships between branches\n\nReturn ONLY valid JSON with no markdown, no preamble:\n{\n  \"central_topic\": \"...\",\n  \"branches\": [\"...\", \"...\"],\n  \"relationships\": [\n    { \"from\": \"...\", \"to\": \"...\", \"label\": \"...\" }\n  ]\n}\n\nINPUT:\n{{input}}"
+    },
+    {
+      "name": "Structurer Agent",
+      "class": "StructurerAgent",
+      "type": "LLM",
+      "next_agent": "Validator Agent",
+      "description": "Converts the flat planner output into a strict hierarchical tree JSON. Central topic becomes root, branches become children, sub-topics become nested children.",
+      "output_format": {
+        "title": "string",
+        "children": [
+          {
+            "title": "string",
+            "children": [
+              {
+                "title": "string",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      "prompt_template": "Convert the planner output into a strict hierarchical JSON tree.\n\nRules:\n- Use central_topic as the root title\n- Branches become direct children of root\n- If a branch has sub-topics, nest them as children\n- Maximum depth is 4 levels\n- Every node must have a title and a children array (empty array if no children)\n\nReturn ONLY valid JSON with no markdown:\n{\n  \"title\": \"...\",\n  \"children\": [\n    {\n      \"title\": \"...\",\n      \"children\": []\n    }\n  ]\n}\n\nINPUT:\n{{planner_output}}"
+    },
+    {
+      "name": "Validator Agent",
+      "class": "ValidatorAgent",
+      "type": "Rule-based + LLM fallback",
+      "next_agent": "Enhancer Agent",
+      "description": "Validates the structured JSON against rules. First applies rule-based checks, then uses LLM to fix any issues found. If validation fails entirely, pipeline continues with best available output.",
+      "validation_rules": [
+        "No duplicate node titles at the same level",
+        "No empty or null title fields",
+        "Maximum depth of 4 levels",
+        "Root node must exist and have a title",
+        "Every node must have a children array",
+        "Minimum 2 children on root node",
+        "Maximum 7 children on any single node"
+      ],
+      "output_format": {
+        "title": "string",
+        "children": []
+      },
+      "prompt_template": "You are a JSON validator and fixer.\n\nValidation rules:\n- No duplicate node titles at the same level\n- No empty or null title fields — replace with 'Untitled'\n- Maximum depth of 4 levels — truncate deeper nodes\n- Root node must have a title\n- Every node must have a children array (use [] if missing)\n- Minimum 2 children on root\n- Maximum 7 children per node — merge extras\n\nFix ALL issues and return the corrected JSON in the SAME schema format.\nReturn ONLY valid JSON with no markdown.\n\nINPUT:\n{{structured_output}}"
+    },
+    {
+      "name": "Enhancer Agent",
+      "class": "EnhancerAgent",
+      "type": "LLM",
+      "next_agent": "Renderer Agent",
+      "description": "Enriches each node with a color, icon emoji, and optional tag. Must not change the title or structure. If this agent fails, pipeline skips enhancement and continues with plain validated output.",
+      "color_palette": [
+        "#c8a96e",
+        "#7eb8a6",
+        "#a47eb8",
+        "#7e9eb8",
+        "#b87e7e",
+        "#7eb87e",
+        "#b8a87e",
+        "#6ea8c8"
+      ],
+      "output_format": {
+        "title": "string",
+        "color": "string (hex)",
+        "icon": "string (single emoji)",
+        "tag": "string (optional, 1-2 words)",
+        "children": []
+      },
+      "prompt_template": "Enhance every node in the JSON tree by adding color, icon, and tag fields.\n\nRules:\n- DO NOT change any title field\n- DO NOT change the structure or nesting\n- Add 'color': a hex color from this palette: #c8a96e, #7eb8a6, #a47eb8, #7e9eb8, #b87e7e, #7eb87e, #b8a87e, #6ea8c8\n- Add 'icon': a single relevant emoji for the node topic\n- Add 'tag': 1-2 word category label (optional)\n- Use the same color for all children of a parent node\n- Root node always gets color #c8a96e\n\nReturn ONLY valid JSON with no markdown.\n\nINPUT:\n{{validated_output}}"
+    },
+    {
+      "name": "Renderer Agent",
+      "class": "RendererAgent",
+      "type": "Deterministic",
+      "next_agent": "Exporter Agent",
+      "description": "Converts the enhanced JSON tree into an interactive SVG mind map rendered in the browser. Uses D3.js radial tree layout. Supports pan, zoom, and drag-to-reposition nodes. This is a frontend component — no LLM call needed.",
+      "tech": {
+        "library": "D3.js v7",
+        "layout": "d3.tree() radial layout",
+        "framework": "React component",
+        "interactions": [
+          "pan",
+          "zoom",
+          "drag node to reposition",
+          "hover tooltip showing tag and icon"
+        ]
+      },
+      "output_format": {
+        "svg_element": "Rendered SVG DOM element inside React canvas",
+        "node_positions": [
+          {
+            "id": "string",
+            "title": "string",
+            "x": "number",
+            "y": "number",
+            "color": "string",
+            "icon": "string"
+          }
+        ]
+      },
+      "failure_fallback": "If D3 rendering fails, display raw JSON in a formatted code block"
+    },
+    {
+      "name": "Exporter Agent",
+      "class": "ExporterAgent",
+      "type": "Deterministic",
+      "next_agent": "Tester Agent",
+      "description": "Exports the rendered mind map in three formats: PNG (screenshot of canvas), PDF (jsPDF), and JSON (Miro + Obsidian compatible schema). All exports are triggered by user button click.",
+      "tech": {
+        "PNG": "html2canvas v1.4.1 — screenshots the SVG canvas element",
+        "PDF": "jsPDF v2.5 — embeds the PNG into a PDF document",
+        "JSON": "Native JSON.stringify — outputs Miro-compatible node/edge schema"
+      },
+      "json_export_schema": {
+        "version": "1.0",
+        "title": "string",
+        "type": "mindmap",
+        "generated": "ISO timestamp",
+        "center": "string",
+        "nodes": [
+          {
+            "id": "string",
+            "type": "center | category | node | leaf",
+            "label": "string",
+            "color": "string",
+            "icon": "string",
+            "x": "number",
+            "y": "number"
+          }
+        ],
+        "edges": [
+          {
+            "from": "string",
+            "to": "string"
+          }
+        ]
+      },
+      "output_format": {
+        "download_triggered": "boolean",
+        "format": "png | pdf | json",
+        "filename": "string (slugified title + format extension)"
+      },
+      "failure_fallback": "If export fails, show manual copy button for raw JSON"
+    },
+    {
+      "name": "Tester Agent",
+      "class": "TesterAgent",
+      "type": "Rule-based + LLM optional",
+      "next_agent": null,
+      "description": "Final quality check on the pipeline output. Validates node count consistency, central topic preservation, structure depth, and enhancement completeness. Returns a quality score.",
+      "checks": [
+        "Central topic in output matches central topic from Planner output",
+        "Total node count in Renderer output matches Validator output node count",
+        "No node has depth greater than 4",
+        "All nodes have non-empty title",
+        "All nodes have color field (if Enhancer succeeded)",
+        "Export files were generated without error"
+      ],
+      "output_format": {
+        "valid": "boolean",
+        "issues": [
+          "string"
+        ],
+        "quality_score": "number (0.0 to 1.0)",
+        "agent_statuses": {
+          "planner": "success | failed",
+          "structurer": "success | failed | retried",
+          "validator": "success | skipped",
+          "enhancer": "success | skipped",
+          "renderer": "success | fallback",
+          "exporter": "success | failed"
+        }
+      },
+      "prompt_template": "Verify the pipeline output quality.\n\nChecks:\n✔ Node count consistency between stages\n✔ Central topic preserved from input to output\n✔ No node exceeds depth 4\n✔ All titles are non-empty strings\n✔ Structure is valid hierarchical JSON\n\nReturn ONLY valid JSON:\n{\n  \"valid\": true,\n  \"issues\": [],\n  \"quality_score\": 0.9,\n  \"agent_statuses\": {}\n}"
+    }
+  ],
+  "pipeline_controller": {
+    "class": "PipelineController",
+    "description": "Orchestrates the sequential execution of all agents. Injects outputs from each agent as inputs to the next. Handles retries, skips, and graceful degradation per failure_handling rules. Logs each stage to JSON.",
+    "responsibilities": [
+      "Load GROK_API_KEY from environment",
+      "Execute agents in order",
+      "Pass output of agent N as input to agent N+1",
+      "Apply retry policy on eligible agents",
+      "Apply failure_handling rules on agent failure",
+      "Collect and return final TesterAgent report"
+    ]
+  },
+  "failure_handling": {
+    "strategy": "Graceful degradation — pipeline continues with best available output at each stage",
+    "rules": {
+      "planner_fails": {
+        "action": "stop",
+        "http_status": 500,
+        "user_message": "Pipeline could not analyze your input. Please try again."
+      },
+      "structurer_fails": {
+        "action": "retry_once",
+        "http_status": 503,
+        "user_message": "Structuring failed, retrying..."
+      },
+      "validator_fails": {
+        "action": "continue_with_structurer_output",
+        "http_status": 200,
+        "user_message": "Validation skipped — using unvalidated structure."
+      },
+      "enhancer_fails": {
+        "action": "skip_use_plain_output",
+        "http_status": 200,
+        "user_message": "Enhancement skipped — colors and icons not applied."
+      },
+      "renderer_fails": {
+        "action": "return_json_only",
+        "http_status": 206,
+        "user_message": "Visual render failed — showing JSON output only."
+      },
+      "exporter_fails": {
+        "action": "show_manual_copy_button",
+        "http_status": 206,
+        "user_message": "Export failed — use the copy button to save JSON manually."
+      }
+    }
+  },
+  "retry_policy": {
+    "max_retries": 1,
+    "eligible_agents": [
+      "Structurer Agent"
+    ],
+    "retry_delay_ms": 1000
+  },
+  "caching": {
+    "enabled": true,
+    "strategy": "Cache Planner output keyed by SHA256 hash of input text. Skip Planner call if same input re-submitted within session.",
+    "scope": "in-memory per session (not persistent)"
+  },
+  "logging": {
+    "format": "JSON",
+    "fields": [
+      "timestamp",
+      "agent_name",
+      "status",
+      "input_length",
+      "output_length",
+      "duration_ms",
+      "error_message"
+    ],
+    "destination": "console + optional /logs endpoint",
+    "level": "INFO in production, DEBUG in development"
+  },
+  "frontend": {
+    "framework": "React 18 + Vite",
+    "styling": "Tailwind CSS",
+    "state_management": "React useState and useReducer",
+    "components": [
+      {
+        "name": "TextInputPanel",
+        "description": "Left sidebar — textarea for raw text input, API key field, sample prompt chips, generate button, agent status indicators"
+      },
+      {
+        "name": "MindMapCanvas",
+        "description": "Main area — D3.js radial SVG canvas with pan, zoom, drag-node interactions"
+      },
+      {
+        "name": "ExportBar",
+        "description": "Bottom bar — PNG, PDF, JSON export buttons, enabled only after successful render"
+      },
+      {
+        "name": "AgentStatusBar",
+        "description": "Shows live pipeline progress: which agent is currently running, success/fail status per stage"
+      },
+      {
+        "name": "QualityScorePanel",
+        "description": "Shows TesterAgent quality_score and any issues after pipeline completes"
+      }
+    ]
+  },
+  "backend": {
+    "framework": "FastAPI",
+    "language": "Python 3.11+",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/generate",
+        "description": "Accepts raw text, runs full pipeline, returns enhanced mind map JSON",
+        "request_body": {
+          "text": "string (required, max 5000 chars)",
+          "api_key": "string (required)"
+        },
+        "response": {
+          "mind_map": "Enhanced hierarchical JSON",
+          "tester_report": "TesterAgent output_format object",
+          "pipeline_log": "Array of per-agent log entries"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "Health check endpoint"
+      }
+    ]
+  },
+  "system_design": {
+    "components": [
+      "FastAPI Backend",
+      "PipelineController",
+      "LLM Agents (Planner, Structurer, Validator, Enhancer, Tester)",
+      "Deterministic Agents (Renderer, Exporter)",
+      "D3.js Renderer Engine",
+      "Export Module (html2canvas + jsPDF)",
+      "React Frontend UI"
+    ]
+  },
+  "object_design": {
+    "classes": [
+      {
+        "name": "PipelineController",
+        "attributes": [
+          "agents: list[BaseAgent]",
+          "context: dict",
+          "logger: Logger"
+        ],
+        "methods": [
+          "run(input_text: str) -> dict",
+          "execute_agent(agent, input) -> dict",
+          "handle_failure(agent_name, error) -> dict"
+        ]
+      },
+      {
+        "name": "BaseAgent",
+        "attributes": [
+          "name: str",
+          "api_key: str",
+          "model: str"
+        ],
+        "methods": [
+          "run(input: dict) -> dict",
+          "call_llm(prompt: str) -> str",
+          "parse_json(raw: str) -> dict"
+        ]
+      },
+      {
+        "name": "PlannerAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(input_text: str) -> dict"
+        ]
+      },
+      {
+        "name": "StructurerAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(planner_output: dict) -> dict"
+        ]
+      },
+      {
+        "name": "ValidatorAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(structured_output: dict) -> dict",
+          "rule_check(tree: dict) -> list[str]",
+          "fix_with_llm(tree: dict, issues: list) -> dict"
+        ]
+      },
+      {
+        "name": "EnhancerAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(validated_output: dict) -> dict"
+        ]
+      },
+      {
+        "name": "RendererAgent",
+        "extends": "BaseAgent",
+        "attributes": [
+          "layout: str = 'radial'"
+        ],
+        "methods": [
+          "run(enhanced_output: dict) -> dict",
+          "compute_positions(tree: dict) -> list"
+        ]
+      },
+      {
+        "name": "ExporterAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(render_output: dict) -> dict",
+          "to_png() -> Blob",
+          "to_pdf() -> Blob",
+          "to_json(tree: dict) -> str"
+        ]
+      },
+      {
+        "name": "TesterAgent",
+        "extends": "BaseAgent",
+        "methods": [
+          "run(pipeline_outputs: dict) -> dict",
+          "check_consistency(outputs: dict) -> list[str]",
+          "compute_score(issues: list) -> float"
+        ]
+      }
+    ]
+  },
+  "sprints": {
+    "sprint_1": {
+      "goal": "Working backend pipeline — Planner + Structurer + FastAPI endpoint",
+      "deliverables": [
+        "PipelineController class",
+        "BaseAgent class",
+        "PlannerAgent class",
+        "StructurerAgent class",
+        "FastAPI /generate endpoint (returns structured JSON)",
+        "FastAPI /health endpoint",
+        ".env setup with GROK_API_KEY"
+      ],
+      "diagrams_required": [
+        "Class diagram for Sprint 1 classes",
+        "Sequence diagram: POST /generate → PlannerAgent → StructurerAgent → response"
+      ]
+    },
+    "sprint_2": {
+      "goal": "Validator + Enhancer + React frontend with live canvas",
+      "deliverables": [
+        "ValidatorAgent class",
+        "EnhancerAgent class",
+        "React frontend with TextInputPanel",
+        "MindMapCanvas with D3.js radial layout",
+        "AgentStatusBar showing live pipeline progress",
+        "Connect frontend to /generate endpoint"
+      ],
+      "diagrams_required": [
+        "Class diagram for Sprint 2 classes",
+        "Sequence diagram: Frontend submit → Backend → Validator → Enhancer → Frontend render"
+      ]
+    },
+    "sprint_3": {
+      "goal": "Renderer + Exporter + Tester + full test suite",
+      "deliverables": [
+        "RendererAgent class",
+        "ExporterAgent class (PNG, PDF, JSON)",
+        "TesterAgent class",
+        "ExportBar and QualityScorePanel frontend components",
+        "PyTest suite with mocked Grok API",
+        "mutmut mutation testing report",
+        "GUI test cases (Selenium or Cypress)"
+      ],
+      "diagrams_required": [
+        "State diagram for app states (idle → generating → rendered → exporting)",
+        "Activity diagram for export flow"
+      ]
+    }
+  },
+  "testing": {
+    "framework": "pytest",
+    "mutation_testing": "mutmut",
+    "coverage_target": ">=95%",
+    "mocking_strategy": "All Grok API calls must be mocked using pytest-mock. No live API calls in tests. GrokClient is injected as a dependency so it can be replaced with a mock.",
+    "unit_tests": [
+      "test_planner_agent: mock Grok response → assert central_topic is string, branches is list of 3-7 strings",
+      "test_planner_agent_invalid_json: mock Grok returns malformed JSON → assert ParseError raised",
+      "test_structurer_agent: given valid planner output → assert output has title and children keys",
+      "test_structurer_agent_depth: assert output tree depth never exceeds 4",
+      "test_validator_agent_duplicates: inject tree with duplicate sibling titles → assert duplicates removed",
+      "test_validator_agent_empty_labels: inject node with empty title → assert replaced with Untitled",
+      "test_enhancer_agent_colors: assert every node in output has a valid hex color field",
+      "test_enhancer_agent_no_title_change: assert no title was modified by enhancer",
+      "test_exporter_json_schema: assert exported JSON has nodes, edges, version, title keys",
+      "test_tester_agent_quality_score: given clean output → assert quality_score >= 0.9",
+      "test_tester_agent_issues: given output with problems → assert valid is false and issues is non-empty",
+      "test_pipeline_controller_order: assert agents called in correct sequence",
+      "test_pipeline_controller_enhancer_skip: simulate enhancer failure → assert pipeline continues with validator output"
+    ],
+    "system_tests": [
+      "Input 'Plan an AI startup' → assert output has >= 4 categories and central_topic is non-empty",
+      "Input empty string → assert HTTP 422 validation error",
+      "Input > 5000 chars → assert input is trimmed to 5000 chars before pipeline runs",
+      "Input valid text → assert TesterAgent quality_score >= 0.7",
+      "Simulate Grok API timeout → assert pipeline returns 500 with correct error message"
+    ],
+    "gui_tests": [
+      "Generate button is disabled when textarea is empty",
+      "Spinner/AgentStatusBar appears during API call",
+      "Export buttons only visible after successful map generation",
+      "Zoom in/out buttons change SVG transform attribute",
+      "PNG export triggers file download with .png extension",
+      "JSON export file contains valid parseable JSON"
+    ]
+  },
+  "functional_requirements": [
+    "FR1: System shall accept raw unstructured text input up to 5000 characters",
+    "FR2: System shall call Grok API to extract central topic and branches",
+    "FR3: System shall convert extracted data into a hierarchical JSON tree",
+    "FR4: System shall validate the tree for duplicates, empty labels, and depth violations",
+    "FR5: System shall enhance nodes with colors, icons, and tags",
+    "FR6: System shall render an interactive SVG mind map with pan, zoom, and drag",
+    "FR7: System shall export the mind map as PNG, PDF, or JSON",
+    "FR8: System shall report a quality score after pipeline completion"
+  ],
+  "non_functional_requirements": [
+    "NFR1: Full pipeline execution shall complete within 10 seconds for inputs under 2000 characters",
+    "NFR2: System shall use a single GROK_API_KEY stored in environment variables",
+    "NFR3: System shall handle Grok API failure gracefully without crashing",
+    "NFR4: Exported JSON shall be importable into Miro",
+    "NFR5: Application shall work on Chrome, Firefox, and Edge",
+    "NFR6: Test coverage shall be >= 95%",
+    "NFR7: No API key shall ever appear in source code or logs"
+  ],
+  "limitations": [
+    "No real-time collaboration between users",
+    "No voice input support",
+    "No persistent storage — mind maps are session-only unless exported",
+    "No offline mode — requires active internet for Grok API calls",
+    "Maximum input length of 5000 characters"
+  ],
+  "folder_structure": {
+    "mindforge/": {
+      "backend/": {
+        "main.py": "FastAPI app, /generate and /health endpoints",
+        "pipeline_controller.py": "PipelineController class",
+        "agents/": {
+          "base_agent.py": "BaseAgent class",
+          "planner_agent.py": "PlannerAgent class",
+          "structurer_agent.py": "StructurerAgent class",
+          "validator_agent.py": "ValidatorAgent class",
+          "enhancer_agent.py": "EnhancerAgent class",
+          "renderer_agent.py": "RendererAgent class",
+          "exporter_agent.py": "ExporterAgent class",
+          "tester_agent.py": "TesterAgent class"
+        },
+        "tests/": {
+          "test_planner.py": "Unit tests for PlannerAgent",
+          "test_structurer.py": "Unit tests for StructurerAgent",
+          "test_validator.py": "Unit tests for ValidatorAgent",
+          "test_enhancer.py": "Unit tests for EnhancerAgent",
+          "test_exporter.py": "Unit tests for ExporterAgent",
+          "test_tester.py": "Unit tests for TesterAgent",
+          "test_pipeline.py": "Integration tests for full pipeline"
+        },
+        "requirements.txt": "fastapi, uvicorn, httpx, python-dotenv, pytest, pytest-mock, mutmut",
+        ".env.example": "GROK_API_KEY=your_key_here"
+      },
+      "frontend/": {
+        "src/": {
+          "components/": {
+            "TextInputPanel.jsx": "Input sidebar component",
+            "MindMapCanvas.jsx": "D3.js SVG canvas component",
+            "ExportBar.jsx": "Export buttons component",
+            "AgentStatusBar.jsx": "Pipeline progress indicator",
+            "QualityScorePanel.jsx": "Tester report display"
+          },
+          "services/": {
+            "apiService.js": "Calls /generate endpoint",
+            "exportService.js": "PNG, PDF, JSON export logic"
+          },
+          "App.jsx": "Root component",
+          "main.jsx": "Vite entry point"
+        },
+        "package.json": "react, d3, html2canvas, jspdf, tailwindcss, vite"
+      },
+      "docs/": {
+        "sprint1/": "Class diagram + sequence diagram for Sprint 1",
+        "sprint2/": "Class diagram + sequence diagram for Sprint 2",
+        "sprint3/": "State diagram + activity diagram for Sprint 3",
+        "system_design.md": "Combined architecture diagram",
+        "object_design.md": "All class definitions with attributes and methods",
+        "requirements.md": "FR + NFR + use cases + user stories",
+        "test_cases.md": "All unit, system, GUI test cases documented"
+      },
+      "pipeline_config.json": "This file",
+      "README.md": "Setup, run instructions, architecture overview"
+    }
+  },
+  "antigravity_mission_prompt": "Build the MindForge Mind Map Generator exactly according to this pipeline_config.json specification.\n\nExecute in sprint order:\n1. Sprint 1: backend/agents/ (PlannerAgent, StructurerAgent), pipeline_controller.py, main.py\n2. Sprint 2: ValidatorAgent, EnhancerAgent, full React frontend with D3.js canvas\n3. Sprint 3: RendererAgent, ExporterAgent, TesterAgent, full pytest suite, export buttons\n\nRules:\n- Load GROK_API_KEY from .env — never hardcode it\n- After each sprint, run pytest and fix all failures before proceeding to the next sprint\n- All Grok API calls must be mockable via dependency injection\n- Test coverage must reach >= 95%\n- Follow the exact folder_structure defined in this config\n- Use the prompt_templates exactly as written for each LLM agent",
+
+  "data_flow": [
+    "Step 1 — User Input: Raw unstructured text (max 5000 chars) submitted via React TextInputPanel",
+    "Step 2 — Planner Agent: Calls Grok API → extracts central_topic, branches[], relationships[]",
+    "Step 3 — Structurer Agent: Calls Grok API → converts flat plan into hierarchical title/children tree (max depth 4)",
+    "Step 4 — Validator Agent: Rule-based checks + Grok LLM fallback → fixes duplicates, empty labels, depth violations → outputs clean tree",
+    "Step 5 — Enhancer Agent: Calls Grok API → adds color (hex), icon (emoji), tag to every node without changing titles",
+    "Step 6 — Renderer Agent: Deterministic (D3.js in browser) → computes radial layout positions → renders interactive SVG canvas",
+    "Step 7 — Exporter Agent: Deterministic (html2canvas + jsPDF + JSON.stringify) → outputs PNG / PDF / Miro-compatible JSON on user click",
+    "Step 8 — Tester Agent: Rule-based + optional Grok call → validates consistency across all stages → returns quality_score (0.0–1.0)",
+    "Final Output → User sees interactive SVG mind map + download buttons + quality score panel"
+  ],
+
+  "sequence_diagram": "1.  User → React UI (TextInputPanel): enters raw text, clicks Generate\n2.  React UI → FastAPI /generate: POST { text, api_key }\n3.  FastAPI → PipelineController: run(input_text)\n4.  PipelineController → PlannerAgent: execute({ input: raw_text })\n5.  PlannerAgent → Grok API (grok-3-mini): POST chat/completions with planner prompt_template\n6.  Grok API → PlannerAgent: { central_topic, branches[], relationships[] }\n7.  PlannerAgent → PipelineController: planner_output JSON\n8.  PipelineController → StructurerAgent: execute({ planner_output })\n9.  StructurerAgent → Grok API: POST chat/completions with structurer prompt_template\n10. Grok API → StructurerAgent: { title, children[] } hierarchical tree\n11. StructurerAgent → PipelineController: structured_output JSON\n12. PipelineController → ValidatorAgent: execute({ structured_output })\n13. ValidatorAgent: run_rules(tree) → detect issues (duplicates, empty labels, depth > 4)\n14. [If issues found] ValidatorAgent → Grok API: POST chat/completions with validator prompt_template to auto-fix\n15. ValidatorAgent → PipelineController: validated_output JSON (fixed tree)\n16. PipelineController → EnhancerAgent: execute({ validated_output })\n17. EnhancerAgent → Grok API: POST chat/completions with enhancer prompt_template\n18. Grok API → EnhancerAgent: tree with color, icon, tag added to every node\n19. EnhancerAgent → PipelineController: enhanced_output JSON\n20. PipelineController → FastAPI: return { enhanced_output, pipeline_log }\n21. FastAPI → React UI: 200 OK { mind_map, tester_report, pipeline_log }\n22. React UI → RendererAgent (D3.js): compute radial layout positions from mind_map JSON\n23. RendererAgent → MindMapCanvas: render interactive SVG with pan/zoom/drag\n24. MindMapCanvas → AgentStatusBar: update all stages to success\n25. MindMapCanvas → QualityScorePanel: display quality_score and issues[]\n26. [User clicks Export PNG] → ExportBar → html2canvas: screenshot SVG canvas → trigger .png download\n27. [User clicks Export PDF] → ExportBar → jsPDF: embed PNG into PDF → trigger .pdf download\n28. [User clicks Export JSON] → ExportBar → JSON.stringify(Miro schema): trigger .json download"
+}
