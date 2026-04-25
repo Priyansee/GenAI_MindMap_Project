@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 export const getClarificationQuestions = async (text) => {
@@ -16,10 +16,10 @@ export const getClarificationQuestions = async (text) => {
 
 export const generateMindMap = async (text, clarificationAnswers = null, additionalInfo = "") => {
   try {
-    const response = await api.post('/generate', { 
-      text, 
+    const response = await api.post('/generate', {
+      text,
       clarification_answers: clarificationAnswers,
-      additional_info: additionalInfo 
+      additional_info: additionalInfo
     });
     return response.data;
   } catch (error) {
@@ -30,8 +30,8 @@ export const generateMindMap = async (text, clarificationAnswers = null, additio
 
 export const refineMindMap = async (previousMap, feedback) => {
   try {
-    const response = await api.post('/refine', { 
-      previous_map: previousMap, 
+    const response = await api.post('/refine', {
+      previous_map: previousMap,
       feedback: feedback
     });
     return response.data;
