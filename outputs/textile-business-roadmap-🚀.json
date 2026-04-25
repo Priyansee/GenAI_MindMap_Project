@@ -1,0 +1,393 @@
+{
+  "type": "mindmap",
+  "nodes": [
+    {
+      "id": "0",
+      "label": "Textile Business Roadmap 🚀",
+      "color": "",
+      "icon": ""
+    },
+    {
+      "id": "1",
+      "label": "Phase 1 📊",
+      "color": "#3498db",
+      "icon": "📈"
+    },
+    {
+      "id": "2",
+      "label": "Plan Setup 📝",
+      "color": "#f1c40f",
+      "icon": "📄"
+    },
+    {
+      "id": "3",
+      "label": "Business Model 📈",
+      "color": "#2ecc71",
+      "icon": "📊"
+    },
+    {
+      "id": "4",
+      "label": "Team Structure 👥",
+      "color": "#9b59b6",
+      "icon": "👥"
+    },
+    {
+      "id": "5",
+      "label": "Initial Costs 💸",
+      "color": "#e74c3c",
+      "icon": "💰"
+    },
+    {
+      "id": "6",
+      "label": "Funding Options 🏦",
+      "color": "#1abc9c",
+      "icon": "🏦"
+    },
+    {
+      "id": "7",
+      "label": "Budget Plan 📊",
+      "color": "#16a085",
+      "icon": "📊"
+    },
+    {
+      "id": "8",
+      "label": "Phase 2 🎨",
+      "color": "#8e44ad",
+      "icon": "🖌️"
+    },
+    {
+      "id": "9",
+      "label": "Product Design 🛍️",
+      "color": "#2c3e50",
+      "icon": "🛍️"
+    },
+    {
+      "id": "10",
+      "label": "Fabric Selection 🧵",
+      "color": "#95a5a6",
+      "icon": "🧵"
+    },
+    {
+      "id": "11",
+      "label": "Pattern Making 🖋️",
+      "color": "#7f8c8d",
+      "icon": "🖋️"
+    },
+    {
+      "id": "12",
+      "label": "Sampling Process 📦",
+      "color": "#4cae4c",
+      "icon": "📦"
+    },
+    {
+      "id": "13",
+      "label": "Prototype Creation 🎨",
+      "color": "#3e8e41",
+      "icon": "🎨"
+    },
+    {
+      "id": "14",
+      "label": "Quality Control 🚫",
+      "color": "#c0392b",
+      "icon": "🚫"
+    },
+    {
+      "id": "15",
+      "label": "Phase 3 📊",
+      "color": "#2980b9",
+      "icon": "📊"
+    },
+    {
+      "id": "16",
+      "label": "Market Research 📊",
+      "color": "#1a1d23",
+      "icon": "📊"
+    },
+    {
+      "id": "17",
+      "label": "Target Audience 👥",
+      "color": "#7f8c8d",
+      "icon": "👥"
+    },
+    {
+      "id": "18",
+      "label": "Competitor Analysis 📊",
+      "color": "#95a5a6",
+      "icon": "📊"
+    },
+    {
+      "id": "19",
+      "label": "Sales Strategy 📈",
+      "color": "#2c3e50",
+      "icon": "📈"
+    },
+    {
+      "id": "20",
+      "label": "Pricing Policy 💸",
+      "color": "#e74c3c",
+      "icon": "💸"
+    },
+    {
+      "id": "21",
+      "label": "Distribution Channels 🚚",
+      "color": "#4cae4c",
+      "icon": "🚚"
+    },
+    {
+      "id": "22",
+      "label": "Phase 4 🛠️",
+      "color": "#8e44ad",
+      "icon": "🛠️"
+    },
+    {
+      "id": "23",
+      "label": "Manufacturing Setup 🏭",
+      "color": "#2c3e50",
+      "icon": "🏭"
+    },
+    {
+      "id": "24",
+      "label": "Equipment Installation 🛠️",
+      "color": "#7f8c8d",
+      "icon": "🛠️"
+    },
+    {
+      "id": "25",
+      "label": "Staff Training 📚",
+      "color": "#95a5a6",
+      "icon": "📚"
+    },
+    {
+      "id": "26",
+      "label": "Operations Management 📈",
+      "color": "#1abc9c",
+      "icon": "📈"
+    },
+    {
+      "id": "27",
+      "label": "Supply Chain Management 🚚",
+      "color": "#4cae4c",
+      "icon": "🚚"
+    },
+    {
+      "id": "28",
+      "label": "Inventory Control 📊",
+      "color": "#16a085",
+      "icon": "📊"
+    },
+    {
+      "id": "29",
+      "label": "Phase 5 🚀",
+      "color": "#9b59b6",
+      "icon": "🚀"
+    },
+    {
+      "id": "30",
+      "label": "Launch Preparation 📆",
+      "color": "#1a1d23",
+      "icon": "📆"
+    },
+    {
+      "id": "31",
+      "label": "Marketing Campaign 📢",
+      "color": "#7f8c8d",
+      "icon": "📢"
+    },
+    {
+      "id": "32",
+      "label": "Sales Promotion 📈",
+      "color": "#2c3e50",
+      "icon": "📈"
+    },
+    {
+      "id": "33",
+      "label": "Growth Strategy 📈",
+      "color": "#8e44ad",
+      "icon": "📈"
+    },
+    {
+      "id": "34",
+      "label": "Expansion Plans 📈",
+      "color": "#4cae4c",
+      "icon": "📈"
+    },
+    {
+      "id": "35",
+      "label": "Performance Metrics 📊",
+      "color": "#16a085",
+      "icon": "📊"
+    },
+    {
+      "id": "36",
+      "label": "Phase 6 📈",
+      "color": "#1abc9c",
+      "icon": "📈"
+    },
+    {
+      "id": "37",
+      "label": "Merged Phase 6 and 7 📈",
+      "color": "#2ecc71",
+      "icon": "📈"
+    },
+    {
+      "id": "38",
+      "label": "Merged Phase 6 and 7 Child 📈",
+      "color": "#9b59b6",
+      "icon": "📈"
+    }
+  ],
+  "edges": [
+    {
+      "from": "0",
+      "to": "1"
+    },
+    {
+      "from": "1",
+      "to": "2"
+    },
+    {
+      "from": "2",
+      "to": "3"
+    },
+    {
+      "from": "2",
+      "to": "4"
+    },
+    {
+      "from": "1",
+      "to": "5"
+    },
+    {
+      "from": "5",
+      "to": "6"
+    },
+    {
+      "from": "5",
+      "to": "7"
+    },
+    {
+      "from": "0",
+      "to": "8"
+    },
+    {
+      "from": "8",
+      "to": "9"
+    },
+    {
+      "from": "9",
+      "to": "10"
+    },
+    {
+      "from": "9",
+      "to": "11"
+    },
+    {
+      "from": "8",
+      "to": "12"
+    },
+    {
+      "from": "12",
+      "to": "13"
+    },
+    {
+      "from": "12",
+      "to": "14"
+    },
+    {
+      "from": "0",
+      "to": "15"
+    },
+    {
+      "from": "15",
+      "to": "16"
+    },
+    {
+      "from": "16",
+      "to": "17"
+    },
+    {
+      "from": "16",
+      "to": "18"
+    },
+    {
+      "from": "15",
+      "to": "19"
+    },
+    {
+      "from": "19",
+      "to": "20"
+    },
+    {
+      "from": "19",
+      "to": "21"
+    },
+    {
+      "from": "0",
+      "to": "22"
+    },
+    {
+      "from": "22",
+      "to": "23"
+    },
+    {
+      "from": "23",
+      "to": "24"
+    },
+    {
+      "from": "23",
+      "to": "25"
+    },
+    {
+      "from": "22",
+      "to": "26"
+    },
+    {
+      "from": "26",
+      "to": "27"
+    },
+    {
+      "from": "26",
+      "to": "28"
+    },
+    {
+      "from": "0",
+      "to": "29"
+    },
+    {
+      "from": "29",
+      "to": "30"
+    },
+    {
+      "from": "30",
+      "to": "31"
+    },
+    {
+      "from": "30",
+      "to": "32"
+    },
+    {
+      "from": "29",
+      "to": "33"
+    },
+    {
+      "from": "33",
+      "to": "34"
+    },
+    {
+      "from": "33",
+      "to": "35"
+    },
+    {
+      "from": "0",
+      "to": "36"
+    },
+    {
+      "from": "36",
+      "to": "37"
+    },
+    {
+      "from": "37",
+      "to": "38"
+    }
+  ]
+}
