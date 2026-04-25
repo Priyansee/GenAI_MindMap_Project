@@ -9,6 +9,7 @@ from agents.enhancer_agent import EnhancerAgent
 from agents.renderer_agent import RendererAgent
 from agents.exporter_agent import ExporterAgent
 from agents.tester_agent import TesterAgent
+from agents.refiner_agent import RefinerAgent
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -24,6 +25,7 @@ class PipelineController:
         self.renderer = RendererAgent(api_key=api_key)
         self.exporter = ExporterAgent(api_key=api_key)
         self.tester = TesterAgent(api_key=api_key)
+        self.refiner = RefinerAgent(api_key=api_key)
         self.logs: List[Dict[str, Any]] = []
 
     def _log_stage(self, agent_name: str, status: str, duration: float, input_len: int, output_len: int, error: str = None):
@@ -141,3 +143,34 @@ class PipelineController:
             "tester_report": tester_report,
             "pipeline_log": self.logs
         }
+
+    async def refine(self, previous_map: Dict, feedback: str) -> Dict[str, Any]:
+        """One-trial refinement process"""
+        start_time = time.time()
+        try:
+            # 1. Run Refiner
+            refined_map = await self.refiner.run({
+                "previous_map": previous_map,
+                "feedback": feedback
+            })
+            
+            # 2. Run Validator on the refined output to ensure it's still good
+            validated_map = await self.validator.run({"structured_output": refined_map})
+            
+            # 3. Regenerate Miro JSON
+            miro_json = await self.exporter.run({"mind_map": validated_map})
+            
+            # 4. Run Final Test
+            tester_report = await self.tester.run({"pipeline_outputs": {"mind_map": validated_map}})
+            
+            self._log_stage("Refinement Process", "success", time.time() - start_time, len(str(previous_map)), len(str(validated_map)))
+            
+            return {
+                "mind_map": validated_map,
+                "miro_json": miro_json,
+                "tester_report": tester_report,
+                "pipeline_log": self.logs
+            }
+        except Exception as e:
+            self._log_stage("Refinement Process", "failed", time.time() - start_time, 0, 0, str(e))
+            raise

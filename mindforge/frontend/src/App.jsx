@@ -5,8 +5,9 @@ import ExportBar from './components/ExportBar';
 import QualityScorePanel from './components/QualityScorePanel';
 import ClarificationPanel from './components/ClarificationPanel';
 import SummaryPanel from './components/SummaryPanel';
+import RefinementPanel from './components/RefinementPanel';
 import PipelineStatusPanel from './components/PipelineStatusPanel';
-import { generateMindMap, getClarificationQuestions } from './services/apiService';
+import { generateMindMap, getClarificationQuestions, refineMindMap } from './services/apiService';
 
 function App() {
   const [mindMapData, setMindMapData] = useState(null);
@@ -17,6 +18,7 @@ function App() {
   const [step, setStep] = useState('input'); // input, clarify, result
   const [initialText, setInitialText] = useState('');
   const [questions, setQuestions] = useState([]);
+  const [refinementUsed, setRefinementUsed] = useState(false);
 
   const handleInitialSubmit = async (text) => {
     setLoading(true);
@@ -53,6 +55,24 @@ function App() {
     setStep('input');
     setMindMapData(null);
     setInitialText('');
+    setRefinementUsed(false);
+  };
+
+  const handleRefine = async (feedback) => {
+    if (refinementUsed) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await refineMindMap(mindMapData, feedback);
+      setMindMapData(result.mind_map);
+      setMiroJson(result.miro_json);
+      setTesterReport(result.tester_report);
+      setRefinementUsed(true);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Refinement failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,6 +132,11 @@ function App() {
               
               <div className="w-80 flex flex-col gap-6">
                 <QualityScorePanel report={testerReport} />
+                <RefinementPanel 
+                  onRefine={handleRefine} 
+                  loading={loading} 
+                  disabled={refinementUsed} 
+                />
                 <PipelineStatusPanel />
               </div>
             </div>

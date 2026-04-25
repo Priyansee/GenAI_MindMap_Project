@@ -29,6 +29,11 @@ class GenerateRequest(BaseModel):
     additional_info: Optional[str] = None
     api_key: Optional[str] = None
 
+class RefineRequest(BaseModel):
+    previous_map: Dict
+    feedback: str
+    api_key: Optional[str] = None
+
 @app.post("/clarify")
 async def get_clarification_questions(request: GenerateRequest):
     if not request.text:
@@ -86,6 +91,19 @@ async def generate_mind_map(request: GenerateRequest):
         print(f"PIPELINE ERROR: {str(e)}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+
+@app.post("/refine")
+async def refine_mind_map(request: RefineRequest):
+    if not request.feedback:
+        raise HTTPException(status_code=400, detail="Feedback is required")
+    
+    api_key = request.api_key or os.getenv("GROK_API_KEY")
+    controller = PipelineController(api_key=api_key)
+    try:
+        result = await controller.refine(request.previous_map, request.feedback)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Refinement failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
