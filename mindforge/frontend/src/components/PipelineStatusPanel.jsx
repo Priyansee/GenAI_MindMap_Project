@@ -10,24 +10,24 @@ const PipelineStatusPanel = () => {
       </div>
 
       <div className="space-y-6">
-        <StatusItem 
-          icon={<Cpu size={16} />} 
-          label="Multi-Agent" 
-          status="Operational" 
-          color="text-emerald-400" 
-          active 
+        <StatusItem
+          icon={<Cpu size={16} />}
+          label="Multi-Agent"
+          status="Operational"
+          color="text-emerald-400"
+          active
         />
-        <StatusItem 
-          icon={<Layers size={16} />} 
-          label="Heuristic" 
-          status="Optimized" 
-          color="text-blue-400" 
+        <StatusItem
+          icon={<Layers size={16} />}
+          label="Heuristic"
+          status="Optimized"
+          color="text-blue-400"
         />
-        <StatusItem 
-          icon={<Share2 size={16} />} 
-          label="Relational" 
-          status="Verified" 
-          color="text-brand-gold" 
+        <StatusItem
+          icon={<Share2 size={16} />}
+          label="Relational"
+          status="Verified"
+          color="text-brand-gold"
         />
       </div>
 

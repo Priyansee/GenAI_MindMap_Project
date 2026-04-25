@@ -51,6 +51,31 @@ function App() {
     }
   };
 
+  const handleNodeEdit = (nodeData, newTitle) => {
+    // Recursive function to update title in the tree
+    const updateTree = (nodes) => {
+      return nodes.map(node => {
+        if (node.title === nodeData.title) {
+          return { ...node, title: newTitle };
+        }
+        if (node.children) {
+          return { ...node, children: updateTree(node.children) };
+        }
+        return node;
+      });
+    };
+
+    setMindMapData(prev => {
+      if (prev.title === nodeData.title) {
+        return { ...prev, title: newTitle };
+      }
+      return {
+        ...prev,
+        children: updateTree(prev.children)
+      };
+    });
+  };
+
   const reset = () => {
     setStep('input');
     setMindMapData(null);
@@ -80,7 +105,7 @@ function App() {
       {step === 'input' && (
         <TextInputPanel onGenerate={handleInitialSubmit} loading={loading} />
       )}
-      
+
       <main className="flex-grow p-8 flex flex-col relative overflow-hidden">
         {error && (
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white px-6 py-3 rounded-lg shadow-xl backdrop-blur-md border border-red-400">
@@ -99,10 +124,10 @@ function App() {
         )}
 
         {step === 'clarify' && (
-          <ClarificationPanel 
-            questions={questions} 
-            onSubmit={handleClarificationSubmit} 
-            loading={loading} 
+          <ClarificationPanel
+            questions={questions}
+            onSubmit={handleClarificationSubmit}
+            loading={loading}
           />
         )}
 
@@ -110,33 +135,33 @@ function App() {
           <div className="flex-grow flex flex-col min-h-0 animate-in fade-in duration-700">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-slate-100 truncate pr-4">{mindMapData.title}</h2>
-              <button 
+              <button
                 onClick={reset}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium border border-slate-700 transition-colors"
               >
                 Create New Map
               </button>
             </div>
-            
+
             <div className="flex-grow flex gap-6 min-h-0">
               <div className="flex-grow flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
                 <div id="mindmap-export-area" className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden relative min-h-[600px]">
-                  <MindMapCanvas data={mindMapData} />
+                  <MindMapCanvas data={mindMapData} onNodeEdit={handleNodeEdit} />
+                  <RefinementPanel
+                    onRefine={handleRefine}
+                    loading={loading}
+                    disabled={refinementUsed}
+                  />
                 </div>
-                
-                <SummaryPanel 
-                  summary={mindMapData.summary} 
-                  flowExplanation={mindMapData.flow_explanation} 
+
+                <SummaryPanel
+                  summary={mindMapData.summary}
+                  flowExplanation={mindMapData.flow_explanation}
                 />
               </div>
-              
+
               <div className="w-80 flex flex-col gap-6">
                 <QualityScorePanel report={testerReport} />
-                <RefinementPanel 
-                  onRefine={handleRefine} 
-                  loading={loading} 
-                  disabled={refinementUsed} 
-                />
                 <PipelineStatusPanel />
               </div>
             </div>

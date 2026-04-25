@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, Edit2 } from 'lucide-react';
 
-const MindMapCanvas = ({ data }) => {
+const MindMapCanvas = ({ data, onNodeEdit }) => {
   const svgRef = useRef();
   const gRef = useRef();
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -63,9 +63,9 @@ const MindMapCanvas = ({ data }) => {
     // Links (Horizontal)
     g.append("g")
       .attr("fill", "none")
-      .attr("stroke", "#334155")
-      .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", 2)
+      .attr("stroke", "#475569")
+      .attr("stroke-opacity", 0.4)
+      .attr("stroke-width", 1.5)
       .selectAll("path")
       .data(root.links())
       .join("path")
@@ -85,7 +85,13 @@ const MindMapCanvas = ({ data }) => {
       .attr("fill", d => d.data.color || "#c8a96e")
       .attr("r", d => d.depth === 0 ? 12 : 8)
       .style("filter", "url(#glow)")
-      .attr("class", "cursor-pointer transition-transform hover:scale-125");
+      .attr("class", "cursor-pointer transition-transform hover:scale-125")
+      .on("dblclick", (event, d) => {
+        const newTitle = prompt("Edit node title:", d.data.title);
+        if (newTitle && newTitle !== d.data.title) {
+          if (onNodeEdit) onNodeEdit(d.data, newTitle);
+        }
+      });
 
     // Text rendering
     const text = node.append("text")
@@ -160,7 +166,10 @@ const MindMapCanvas = ({ data }) => {
       <svg id="mindmap-svg" ref={svgRef} viewBox="0 0 1200 800" className="w-full h-full"></svg>
 
       {/* Zoom Controls Overlay */}
-      <div className="absolute bottom-6 right-6 flex flex-col gap-2 bg-slate-800/80 backdrop-blur-md p-2 rounded-xl border border-slate-700 shadow-2xl z-10">
+      <div 
+        data-html2canvas-ignore="true"
+        className="absolute bottom-6 right-6 flex flex-col gap-2 bg-slate-800/80 backdrop-blur-md p-2 rounded-xl border border-slate-700 shadow-2xl z-10"
+      >
         <button
           onClick={() => svgRef.current.zoomIn()}
           className="p-2 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
